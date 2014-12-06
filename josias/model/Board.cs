@@ -40,24 +40,32 @@ namespace josias
 	{
 		public const ulong FULL_BOARD = ulong.MaxValue;
 
-		ulong whitePawns;		// bonde
-		ulong whiteKnights;		// springer 
-		ulong whiteBishops;		// løber
-		ulong whiteRooks;		// tårn
-		ulong whiteQueens;
-		ulong whiteKing;
+		public ulong whitePawns;		// bonde
+		public ulong whiteKnights;		// springer 
+		public ulong whiteBishops;		// løber
+		public ulong whiteRooks;		// tårn
+		public ulong whiteQueens;
+		public ulong whiteKing;
 
-		ulong blackPawns;
-		ulong blackKnights;
-		ulong blackBishops;
-		ulong blackRooks;
-		ulong blackQueens;
-		ulong blackKing;
+		public ulong blackPawns;
+		public ulong blackKnights;
+		public ulong blackBishops;
+		public ulong blackRooks;
+		public ulong blackQueens;
+		public ulong blackKing;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="josias.Board"/> class.
+		/// </summary>
 		public Board ()
 		{
-			// Initialize a standard chess board
+			Initialize ();
+		}
 
+		/// <summary>
+		/// Initialize the chessboard.
+		/// </summary>
+		public void Initialize() {
 			whitePawns = (ulong)(sq.a7 | sq.b7 | sq.c7 | sq.d7 | sq.e7 | sq.f7 | sq.g7 | sq.h7);
 			whiteKnights = (ulong)(sq.b8 | sq.g8);
 			whiteBishops = (ulong)(sq.c8 | sq.f8);
@@ -113,16 +121,29 @@ namespace josias
 		/// <returns>A <see cref="System.String"/> that represents the current <see cref="josias.Board"/>.</returns>
 		public override String ToString ()
 		{
+			/**
+			 * Actually because we're representing the board h8 -> a1 we build a string where the 
+			 * files are correct but the ranks are in the wrong order. We're going to do it anyway
+			 * and then reverse the order of the lines at a later point
+			 * */
+
 			StringBuilder sb = new StringBuilder();
 
-
-
 			for (int i = 0; i < 64; i++) {
-				if ((i % 2 == 0) ^ (i % 16 > 7)) {
-					sb.Append ("\x1b[47;31;2m");
+				/**
+				 * Figure out which color to put on the field. Every other field should be white but
+				 * the order should also shift for each rank. So we divide the board into four bundles
+				 * comprising two ranks and swap the color for half of the bundle (= one rank).
+				 * */
+				if ((i % 2 == 0) ^ (i % 16 < 8)) {
+					sb.Append ("\x1b[47;31;2m");	// White
 				} else {
-					sb.Append ("\x1b[40;31;1m");
+					sb.Append ("\x1b[40;31;1m");	// Black
 				}
+
+				// TODO: Assert that no pieces are overlapping.
+
+				// Look at bit number (64-i) and figure out what character to put on
 				sb.Append(
 					((whitePawns >> i) & 1) == 1 ? "♙" :
 					((blackPawns >> i) & 1) == 1 ? "♟" :
@@ -140,12 +161,13 @@ namespace josias
 				);
 
 				// Reset colors after each line
-				sb.Append ("\x1b[0m");
-
-				sb.Append ((i % 8 == 7) ? "\n" : "");
+				sb.Append ((i % 8 == 7) ? "\x1b[0m\n" : "");
 			}
 
-			return sb.ToString();
+			// The board is now upside down. Let's reverse it
+			String[] reversed = sb.ToString ().Split ('\n');
+			Array.Reverse (reversed);
+			return String.Join ("\n", reversed);
 		}
 
 		public static int XY (int rank, int file)
