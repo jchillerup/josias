@@ -6,9 +6,10 @@ namespace josias
 	{
 		public static void Main (string[] args)
 		{
-			Console.WriteLine ("Hello World!\n");
-
 			Board b = new Board ();
+			UCI uci = new UCI ();
+
+			Console.WriteLine (b);
 		}
 	}
 }
